@@ -8,3 +8,10 @@ screenshots
 *egg-info
 submodules/adain/models
 submodules/adain/input
+images
+*.zip
+WikiArt.csv
+output
+datasets
+SegAnyGAussians
+submodules

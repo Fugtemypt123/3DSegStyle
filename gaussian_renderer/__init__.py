@@ -16,7 +16,7 @@ from feature_gaussian_rasterization import GaussianRasterizer as FeatureGaussian
 from scene.gaussian_model import GaussianModel
 from utils.sh_utils import eval_sh
 
-def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, scaling_modifier = 1.0, override_color = None, feature_linear = None):
+def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, scaling_modifier = 1.0, override_color = None, feature_linear = None, index=0):
     """
     Render the scene. 
     
@@ -73,17 +73,28 @@ def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, 
     shs = None
     colors_precomp = None
     if feature_linear is None:
-        if override_color is None:
-            if pipe.convert_SHs_python:
-                shs_view = pc.get_features.transpose(1, 2).view(-1, 3, (pc.max_sh_degree+1)**2)
-                dir_pp = (pc.get_xyz - viewpoint_camera.camera_center.repeat(pc.get_features.shape[0], 1))
-                dir_pp_normalized = dir_pp/dir_pp.norm(dim=1, keepdim=True)
-                sh2rgb = eval_sh(pc.active_sh_degree, shs_view, dir_pp_normalized)
-                colors_precomp = torch.clamp_min(sh2rgb + 0.5, 0.0)
-            else:
-                shs = pc.get_features
-        else:
-            colors_precomp = override_color
+        # if override_color is None:
+        #     if pipe.convert_SHs_python:
+        #         shs_view = pc.get_features.transpose(1, 2).view(-1, 3, (pc.max_sh_degree+1)**2)
+        #         dir_pp = (pc.get_xyz - viewpoint_camera.camera_center.repeat(pc.get_features.shape[0], 1))
+        #         dir_pp_normalized = dir_pp/dir_pp.norm(dim=1, keepdim=True)
+        #         sh2rgb = eval_sh(pc.active_sh_degree, shs_view, dir_pp_normalized)
+        #         colors_precomp = torch.clamp_min(sh2rgb + 0.5, 0.0)
+                
+        #     else:
+        #         shs = pc.get_features
+        # else:
+        #     colors_precomp = override_color
+        shs_view = pc.get_features.transpose(1, 2).view(-1, 3, (pc.max_sh_degree+1)**2)
+        dir_pp = (pc.get_xyz - viewpoint_camera.camera_center.repeat(pc.get_features.shape[0], 1))
+        dir_pp_normalized = dir_pp/dir_pp.norm(dim=1, keepdim=True)
+        sh2rgb = eval_sh(pc.active_sh_degree, shs_view, dir_pp_normalized)
+        colors_precomp = torch.clamp_min(sh2rgb + 0.5, 0.0)
+
+        if override_color is not None:
+            mask = pc._cls == index
+            colors_precomp[mask] = override_color[mask]
+            
     else:
         colors_precomp = pc._vgg_features # [N, 32]
 

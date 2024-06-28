@@ -60,6 +60,7 @@ class GaussianModel:
         self.percent_dense = 0
         self.spatial_lr_scale = 0
         self.setup_functions()
+        self._cls = torch.empty(0)
 
     def capture(self, is_feature_model=False, is_style_model=False):
         
@@ -98,7 +99,7 @@ class GaussianModel:
             self.spatial_lr_scale,
         )
     
-    def restore(self, model_args, training_args=None, from_feature_model=False, from_style_model=False):
+    def restore(self, model_args, training_args=None, from_feature_model=False, from_style_model=False, xyz=None):
 
         if from_feature_model:
             (self._xyz,
@@ -118,7 +119,8 @@ class GaussianModel:
             self._opacity,
             self.final_vgg_features,
             self.decoder_state_dict) = model_args
-            self.decoder = GaussianConv(self.get_xyz.detach()).cuda()
+            # self.decoder = GaussianConv(self.get_xyz.detach()).cuda()
+            self.decoder = GaussianConv(xyz).cuda()
             self.decoder.load_state_dict(self.decoder_state_dict)
             self.style_transfer = MulLayer().cuda()
             return
