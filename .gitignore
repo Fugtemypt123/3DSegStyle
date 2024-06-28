@@ -13,5 +13,7 @@ images
 WikiArt.csv
 output
 datasets
-SegAnyGAussians
+SegAnyGAussians/data
+SegAnyGAussians/pretrained_models
+SegAnyGAussians/third_party/segment-anything/
 submodules
