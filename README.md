@@ -31,8 +31,6 @@ Please create two folders `SegAnyGAussians/data` and `SegAnyGAussians/pretrained
 
 ### 2.1 Interactive Remote Viewer
 
-https://github.com/Kunhao-Liu/StyleGaussian/assets/63272695/d6dfda95-b272-42ff-b855-e16801f594a9
-
 Our interactive remote viewer is based on [Viser](https://github.com/nerfstudio-project/viser). To start the viewer, run the following command:
 ```bash
 python seg_style.py -m [model_path] --style_folder [style_folder] --viewer_port [viewer_port]
