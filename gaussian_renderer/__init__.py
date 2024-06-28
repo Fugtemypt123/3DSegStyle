@@ -92,8 +92,11 @@ def render(viewpoint_camera, pc : GaussianModel, pipe, bg_color : torch.Tensor, 
         colors_precomp = torch.clamp_min(sh2rgb + 0.5, 0.0)
 
         if override_color is not None:
-            mask = pc._cls == index
-            colors_precomp[mask] = override_color[mask]
+            if index == -1:
+                colors_precomp = override_color
+            else:
+                mask = pc._cls == index
+                colors_precomp[mask] = override_color[mask]
             
     else:
         colors_precomp = pc._vgg_features # [N, 32]

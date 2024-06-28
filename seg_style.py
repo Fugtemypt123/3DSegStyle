@@ -41,6 +41,33 @@ class ViserViewer:
         self.server = viser.ViserServer(port=self.port)
         self.need_update = False
 
+        # Add partially transfer arguments
+        self.scene_index = 0
+        self.index_to_cls = {
+            0: -1, 
+            1: 21, 
+            2: 20, 
+            3: 24, 
+            4: 23, 
+            5: 17, 
+            6: 10, 
+            7: 27, 
+            8: 28, 
+            9: 12, 
+        }
+        self.index_to_name = {
+            0: "All",
+            1: "Table",
+            2: "Flower",
+            3: "Floor",
+            4: "House",
+            5: "Tree",
+            6: "Wall",
+            7: "Grass near tree",
+            8: "Grass aroud table",
+            9: "Grass near flower pot",
+        }
+
         with self.server.add_gui_folder("Rendering Settings"):
             self.reset_view_button = self.server.add_gui_button("Reset View")
 
@@ -63,6 +90,12 @@ class ViserViewer:
             self.fps = self.server.add_gui_text("FPS", initial_value="-1", disabled=True)
 
 
+        def create_click_handler(index):
+            def on_click(_):
+                self.need_update = True
+                self.scene_index = index
+            return on_click
+
         with self.server.add_gui_folder("Style Transfer"):
             self.style_img_path_text = self.server.add_gui_text(
                     "Style Image",
@@ -74,6 +107,12 @@ class ViserViewer:
 
             if wikiart_img_paths is not None:
                 self.random_style_button = self.server.add_gui_button("Random Style")
+
+            with self.server.add_gui_folder("Partially Transfer"):
+                for i in range(10):
+                    # button = self.server.add_gui_button(f"Part {i}")
+                    button = self.server.add_gui_button(self.index_to_name[i])
+                    button.on_click(create_click_handler(i))
 
         
         with self.server.add_gui_folder("Style Interpolation"):
@@ -245,42 +284,9 @@ class ViserViewer:
                 end_cuda = torch.cuda.Event(enable_timing=True)
                 start_cuda.record()
 
-                # seg_colors = self.label_to_color[self.gaussians._cls] 
-                # seg_colors = None
-
-                # rendering = render(view, self.gaussians, self.pipeline, self.background, override_color=seg_colors)["render"]
-
-                # 0: 8983 垃圾
-                # 1: 2241 垃圾
-                # 2: 1921 垃圾
-                # 3: 3590 门边上地道那一侧的花盆以及旁边那一坨草
-                # 4: 2555 基本是垃圾
-                # 5: 2464
-                # 6: 2861
-                # 7: 2455
-                # 8: 2133
-                # 9: 2827
-                # 10: 30365 有地道那面的墙
-                # 11: 3759
-                # 12: 8154 门另一侧花盆边上的草
-                # 13: 6243 某一堆垃圾草
-                # 14: 2191 垃圾
-                # 15: 5878 垃圾草
-                # 16: 6296 门边上一圈垃圾
-                # 17: 3970 离桌子最近的那一棵树
-                # 18: 3208 垃圾
-                # 19: 3532 门的上半部分
-                # 20: 4551 花！花！花！
-                # 21: 26262 大概率是桌子，小概率是垃圾
-                # 22: 3948 垃圾
-                # 23: 34456 房子
-                # 24: 59025 桌子下面的地板和桌子腿
-                # 25: 4439 纯粹的垃圾
-                # 26: 4186 垃圾
-                # 27: 16777 桌子旁边挨着花盆的那一坨草
-                # 28: 59140 桌子下面的地板外侧那一圈草
-                rendering = render(view, self.gaussians, self.pipeline, self.background, override_color=self.override_color, index=20)["render"]
+                rendering = render(view, self.gaussians, self.pipeline, self.background, override_color=self.override_color, index=self.index_to_cls[self.scene_index])["render"]
                 rendering = rendering.clamp(0, 1)
+
                 if self.display_style_img.value:
                     if not self.display_interpolation and self.style_img is not None:
                         rendering[:, -128:, -128:] = self.style_img.squeeze(0)
@@ -419,392 +425,3 @@ if __name__ == "__main__":
     args = get_combined_args(parser)
     print("Rendering " + args.model_path)
     run_viewer(model.extract(args), pipeline.extract(args), args.style_folder, viewer_port=args.viewer_port)
-
-
-
-
-
-# print("final vgg features shape:", gaussian.final_vgg_features.shape)
-# print("xyz shape:", gaussian._xyz.shape)
-# print("cls shape:", gaussian._cls.shape)
-# print("features_dc shape:", gaussian._features_dc.shape)
-# print("features_rest shape:", gaussian._features_rest.shape)
-# print("scaling shape:", gaussian._scaling.shape)
-# print("rotation shape:", gaussian._rotation.shape)
-# print("opacity shape:", gaussian._opacity.shape)
-# print("max_radii2D shape:", gaussian.max_radii2D.shape)
-# print("xyz_gradient_accum shape:", gaussian.xyz_gradient_accum.shape)
-# print("denom shape:", gaussian.denom.shape)
-# self._xyz = torch.empty(0)
-# self._features_dc = torch.empty(0)
-# self._features_rest = torch.empty(0)
-# self._scaling = torch.empty(0)
-# self._rotation = torch.empty(0)
-# self._opacity = torch.empty(0)
-# self.max_radii2D = torch.empty(0)
-# self.xyz_gradient_accum = torch.empty(0)
-# self.denom = torch.empty(0)
-# self.optimizer = None
-# self.percent_dense = 0
-# self.spatial_lr_scale = 0
-# self.setup_functions()
-# self._cls = torch.empty(0)
-# raise NotImplementedError("你的生命已如风中残烛！")
-
-
-# show distribution of cls
-# hist = torch.histc(gaussians._cls, bins=1000, min=0, max=999)
-# frequency_dict = {i: int(hist[i]) for i in range(1000)}
-# for i in range(1000):
-#     if frequency_dict[i] < 100:
-#         del frequency_dict[i]
-# print("Frequency dict: ")
-# for key, value in frequency_dict.items():
-#     print(f"{key}: {value}")
-# raise NotImplementedError("你的生命已如风中残烛！")
-
-
-# def update_seg(gaussian, seg):
-#     ori_xyz = gaussian._xyz.cpu().numpy()
-#     seg_xyz = seg["xyz"].cpu().numpy()
-#     seg_cls = seg["cls"]
-#     neigh = NearestNeighbors(n_neighbors=1)
-#     neigh.fit(seg_xyz)
-#     _, indices = neigh.kneighbors(ori_xyz)
-#     indices = indices.flatten()
-#     ori_cls = seg_cls[indices]
-#     gaussian._cls = torch.tensor(ori_cls, dtype=torch.long, device="cuda")
-    
-    # print("Update seg cls done!")
-
-
-# seg_fet_dc = seg["fet_dc"]
-# seg_fet_rest = seg["fet_rest"]
-# near_fet_dc = seg_fet_dc[indices]
-
-# ori_fet_dc = seg_fet_dc[indices]
-# ori_fet_rest = seg_fet_rest[indices]
-# gaussian._features_dc = ori_fet_dc
-# gaussian._features_rest = ori_fet_rest
-
-# # print xyz range
-# xyz_min = gaussians._xyz.min(0)
-# xyz_max = gaussians._xyz.max(0)
-# print(f"xyz min: {xyz_min}, xyz max: {xyz_max}")
-
-
-# show distribution of cls
-# hist = torch.histc(gaussians._cls, bins=1000, min=0, max=999)
-# frequency_dict = {i: int(hist[i]) for i in range(1000)}
-# for i in range(1000):
-#     if frequency_dict[i] < 100:
-#         del frequency_dict[i]
-# print("Frequency dict: ")
-# for key, value in frequency_dict.items():
-#     print(f"{key}: {value}")
-# raise NotImplementedError("你的生命已如风中残烛！")
-
-
-# calculate gaussians xyz range
-# xyz shape: torch.Size([5834784, 3])
-# xyz = seg_gaussians._xyz
-# xyz_min = xyz.min(0)
-# xyz_max = xyz.max(0)
-# print(f"xyz min: {xyz_min}, xyz max: {xyz_max}")
-# raise NotImplementedError("你的生命已如风中残烛！")
-# [-44.7908, -34.0034, -24.1227]
-# [57.4729,  9.3218, 35.2362]
-# self.cluster_point_colors[self.seg_score.max(dim = -1)[0].detach().cpu().numpy() < 0.5] = (0,0,0)
-
-
-# xyz = gaussians._xyz
-# xyz_min = xyz.min(0)
-# xyz_max = xyz.max(0)
-# print(f"xyz min: {xyz_min}, xyz max: {xyz_max}")
-# raise NotImplementedError("你的生命已如风中残烛！")
-# # [-46.2879, -53.1456, -24.5149]
-# # [55.9820, 70.3039, 58.6648]
-
-
-# Scene:
-# Activate_sh_degree: 0
-# Max_sh_degree: 3
-# xyz shape: torch.Size([316266, 3])
-# features_dc shape: torch.Size([0])
-# features_rest shape: torch.Size([0])
-# scaling shape: torch.Size([316266, 3])
-# rotation shape: torch.Size([316266, 4])
-# opacity shape: torch.Size([316266, 1])
-# max_radii2D shape: torch.Size([0])
-# xyz_gradient_accum shape: torch.Size([0])
-# denom shape: torch.Size([0])
-# percent_dense: 0
-# spatial_lr_scale: 0
-
-# Seg scene:
-# Activate_sh_degree: 3
-# Max_sh_degree: 3
-# xyz shape: torch.Size([5834784, 3])
-# mask shape: torch.Size([5834784])
-# features_dc shape: torch.Size([5834784, 1, 3])
-# features_rest shape: torch.Size([5834784, 15, 3])
-# scaling shape: torch.Size([5834784, 3])
-# rotation shape: torch.Size([5834784, 4])
-# opacity shape: torch.Size([5834784, 1])
-# max_radii2D shape: torch.Size([0])
-# xyz_gradient_accum shape: torch.Size([0])
-# denom shape: torch.Size([0])
-# percent_dense: 0
-# spatial_lr_scale: 0
-
-# Seg feature:
-# Activate_sh_degree: 0
-# Max_sh_degree: 0
-# xyz shape: torch.Size([5834784, 3])
-# mask shape: torch.Size([5834784])
-# scaling shape: torch.Size([5834784, 3])
-# rotation shape: torch.Size([5834784, 4])
-# opacity shape: torch.Size([5834784, 1])
-# max_radii2D shape: torch.Size([0])
-# xyz_gradient_accum shape: torch.Size([0])
-# denom shape: torch.Size([0])
-# percent_dense: 0
-# spatial_lr_scale: 0
-
-# 0: 1754
-# 2: 833
-# 6: 274
-# 8: 124
-# 9: 516
-# 10: 135
-# 11: 271
-# 12: 125
-# 14: 121
-# 15: 487
-# 17: 158
-# 19: 578
-# 20: 486
-# 21: 270
-# 22: 5507
-# 23: 22738
-# 24: 415
-# 25: 1155
-# 26: 424
-# 27: 369
-# 28: 642
-# 29: 515
-# 30: 500
-# 31: 256
-# 33: 151
-# 34: 506
-# 35: 336
-# 36: 198
-# 37: 441
-# 38: 104
-# 39: 1448
-# 40: 297
-# 41: 1150
-# 42: 1725
-# 43: 108
-# 44: 341
-# 45: 473
-# 46: 1352
-# 47: 623
-# 48: 555
-# 49: 1200
-# 50: 704
-# 51: 724
-# 52: 1243
-# 53: 3368
-# 54: 1814
-# 55: 1173
-# 56: 1448
-# 58: 625
-# 59: 453
-# 60: 340
-# 61: 562
-# 62: 3884
-# 63: 330
-# 64: 533
-# 65: 5102
-# 66: 2601
-# 67: 1749
-# 68: 3207
-# 69: 724
-# 70: 1595
-# 71: 458
-# 72: 925
-# 73: 252
-# 74: 549
-# 75: 420
-# 76: 207
-# 78: 438
-# 79: 7030
-# 80: 410
-# 81: 982
-# 82: 325
-# 83: 540
-# 84: 3713
-# 85: 27469
-# 86: 566
-# 87: 9103
-# 88: 58577
-# 89: 396
-# 90: 896
-# 91: 6073
-# 92: 1224
-# 93: 28768
-# 94: 3000
-# 95: 16266
-# 96: 8552
-# 97: 56704
-
-
-# 1: 195, 
-# 2: 622, 
-# 3: 451, 
-# 5: 216, 
-# 6: 139, 
-# 7: 806, 
-# 10: 121, 
-# 11: 342, 
-# 12: 259, 
-# 13: 255, 
-# 15: 138, 
-# 17: 153, 
-# 18: 263, 
-# 19: 143, 
-# 23: 166, 
-# 25: 372, 
-# 29: 294, 
-# 30: 135, 
-# 31: 273, 
-# 34: 473, 
-# 37: 214, 
-# 38: 185, 
-# 39: 305, 
-# 40: 226, 
-# 41: 1015, 
-# 42: 114, 
-# 43: 555, 
-# 45: 17118, 
-# 46: 3985, 
-# 47: 536, 
-# 48: 773, 
-# 49: 167, 
-# 51: 101, 
-# 55: 442, 
-# 56: 234, 
-# 57: 714, 
-# 58: 260, 
-# 59: 329, 
-# 60: 722, 
-# 61: 319, 
-# 62: 643, 
-# 63: 746, 
-# 64: 4852, 
-# 65: 322, 
-# 66: 452, 
-# 67: 1003, 
-# 68: 108, 
-# 71: 235, 
-# 72: 171, 
-# 73: 602, 
-# 74: 1674, 
-# 75: 690, 
-# 77: 163, 
-# 79: 779, 
-# 80: 118, 
-# 84: 302, 
-# 85: 268, 
-# 86: 1139, 
-# 87: 331, 
-# 88: 409, 
-# 89: 143, 
-# 90: 1137, 
-# 91: 623, 
-# 93: 465, 
-# 94: 668, 
-# 95: 177, 
-# 96: 1893, 
-# 97: 682, 
-# 98: 116, 
-# 99: 1143, 
-# 100: 1079, 
-# 101: 916, 
-# 103: 154, 
-# 104: 797, 
-# 105: 252, 
-# 106: 127, 
-# 108: 147, 
-# 111: 147, 
-# 112: 329, 
-# 113: 221, 
-# 114: 25878, 
-# 115: 1193, 
-# 116: 525, 
-# 117: 342, 
-# 118: 626, 
-# 119: 432, 
-# 120: 455, 
-# 121: 910, 
-# 122: 3692, 
-# 123: 151, 
-# 124: 116, 
-# 125: 2316, 
-# 126: 1038, 
-# 128: 163, 
-# 132: 663, 
-# 133: 2281, 
-# 134: 1108, 
-# 135: 183, 
-# 136: 1852, 
-# 137: 1821, 
-# 138: 794, 
-# 139: 1283, 
-# 141: 735, 
-# 142: 1729, 
-# 143: 3000, 
-# 144: 442, 
-# 146: 20499, 
-# 147: 1637, 
-# 148: 122, 
-# 150: 152, 
-# 151: 260, 
-# 153: 336, 
-# 155: 491, 
-# 157: 7336, 
-# 159: 194, 
-# 161: 585, 
-# 162: 109, 
-# 163: 350, 
-# 164: 8716, 
-# 166: 222, 
-# 167: 3543, 
-# 170: 194, 
-# 171: 1156, 
-# 173: 158, 
-# 174: 138, 
-# 175: 5225, 
-# 176: 723, 
-# 177: 4086, 
-# 178: 393, 
-# 180: 358, 
-# 181: 263, 
-# 182: 900, 
-# 183: 295, 
-# 184: 384, 
-# 185: 1615, 
-# 186: 974, 
-# 187: 52154, 
-# 188: 679, 
-# 189: 662, 
-# 190: 1207, 
-# 193: 259, 
-# 195: 3339, 
-# 196: 301, 
-# 198: 109, 
-# 204: 15225, 
-# 205: 50423, 
-# 206: 3913, 
-# 207: 10498
