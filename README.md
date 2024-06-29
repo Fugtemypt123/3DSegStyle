@@ -1,4 +1,4 @@
-#  3DSegStyle: 3D Style Transfer on Any Object in the Scene
+#  3DSegStyle: Segment and Stylize 3D Gaussian Splatting
 
 
 This repository contains a final project for Peking University's 2024 spring semester course "Frontiers of Geometric Computing", introduced by [Prof. Peng-Shuai Wang](https://wang-ps.github.io/). 
