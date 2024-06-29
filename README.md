@@ -3,9 +3,9 @@
 
 This repository contains a final project for Peking University's 2024 spring semester course "Frontiers of Geometric Computing", introduced by [Prof. Peng-Shuai Wang](https://wang-ps.github.io/). 
 
-The main propose of this project is to achieve instant 3D style transfer on any object in the scene. We first train the scene with 3D gaussian splatting modeling, then perform segmentation on the trained gaussians, and finally use the segmentation results to achieve style transfer at specific objects. 
+The main propose of this project is to achieve instant 3D style transfer on any segmented object in the scene. We first train the scene with 3D gaussian splatting modeling, then perform segmentation on the trained gaussians, and finally use the segmentation results to achieve style transfer at specific objects. 
 
-To achieve this, we utilize open source projects [StyleGaussian](https://arxiv.org/abs/2403.07807) and [SAGA (Segment Any 3D GAussians)](https://arxiv.org/abs/2312.00860). Thank them a lot!
+To achieve this, we utilize open source projects [StyleGaussian](https://arxiv.org/abs/2403.07807) and [SAGA (Segment Any 3D GAussians)](https://arxiv.org/abs/2312.00860). We thank the authors for their great work and open-sourcing the code.
 
 
 [![Demo](https://res.cloudinary.com/marcomontalbano/image/upload/v1719566181/video_to_markdown/images/youtube--6S12YDWTCq8-c05b58ac6eb4c4700831b2b3070cd403.jpg)](https://www.youtube.com/watch?v=6S12YDWTCq8 "Demo")
