@@ -29,6 +29,8 @@ Please download the pre-processed datasets and put them in the `datasets` folder
 
 Please create two folders `SegAnyGAussians/data` and `SegAnyGAussians/pretrained_models`. Follow the guidance in `SegAnyGAussians/README.md` to initialize SAGA model. Put your data under `SegAnyGAussians/data`, and set your SAGA model path as `SegAnyGAussians/pretrained_models`. 
 
+Also, we provide 2D distilling optimized checkpoint of `garden` scene [HERE](https://drive.google.com/drive/folders/1SXxhLDmhOW_lPScke2iPbwPuhMWoiIEv?usp=sharing). Please put this `default` dir under the `output/garden/artistic`.
+
 ### 2.1 Interactive Remote Viewer
 
 Our interactive remote viewer is based on [Viser](https://github.com/nerfstudio-project/viser). To start the viewer, run the following command:
@@ -126,4 +128,4 @@ where `dataset_path` is the path to the training dataset, `wikiart_path` is the 
 
 ## 4 Acknowledgements
 
-Our work is based on [StyleGaussian](https://arxiv.org/abs/2403.07807) and [SAGA (Segment Any 3D GAussians)](https://arxiv.org/abs/2312.00860). We thank the authors for their great work and open-sourcing the code.
+Our work is based on [StyleGaussian](https://arxiv.org/abs/2403.07807), [SAGA (Segment Any 3D GAussians)](https://arxiv.org/abs/2312.00860) and [ZStar](https://arxiv.org/abs/2311.16491). We thank the authors for their great work and open-sourcing the code.
